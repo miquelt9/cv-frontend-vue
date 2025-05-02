@@ -58,6 +58,10 @@
                 "user_manual": "User Manual",
                 "learn_digital_logic": "Learn Digital Logic",
                 "discussion_forum": "Discussion Forum"
+            },
+            "jutge": {
+                "heading": "Jutge",
+                "send_to_jutge": "Send to Jutge"
             }
         },
         "panel_header": {
