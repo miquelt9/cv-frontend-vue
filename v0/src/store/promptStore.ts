@@ -31,6 +31,11 @@ interface promptStoreType {
             emitOption: string | boolean
         }>
     }
+    auth: {
+        activate: boolean
+        messageText: string
+        isPersistent: boolean
+    }
     DeleteCircuit: {
         activate: boolean
         messageText: string
@@ -67,6 +72,11 @@ export const usePromptStore = defineStore({
             messageText: '',
             isPersistent: false,
             buttonList: [],
+        },
+        auth: {
+            activate: false,
+            messageText: 'Please enter your Jutge credentials:',
+            isPersistent: true,
         },
         DeleteCircuit: {
             activate: false,
