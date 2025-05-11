@@ -21,16 +21,16 @@ import { showTourGuide } from './tutorials'
 import setupModules from './moduleSetup'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/addon/hint/show-hint.css'
-import 'codemirror/mode/javascript/javascript' // verilog.js from codemirror is not working because array prototype is changed.
+import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/edit/closebrackets'
 import 'codemirror/addon/hint/anyword-hint'
 import 'codemirror/addon/hint/show-hint'
 import { setupCodeMirrorEnvironment } from './Verilog2CV'
-// import { keyBinder } from '#/components/DialogBox/CustomShortcut.vue'
 import '../vendor/jquery-ui.min.css'
 import '../vendor/jquery-ui.min'
 import { confirmSingleOption } from '#/components/helpers/confirmComponent/ConfirmComponent.vue'
 import { getToken } from '#/pages/simulatorHandler.vue'
+// import { usePromptStore } from '#/store/promptStore'; // Removed import, handled in simulator.vue
 
 /**
  * to resize window and setup things it
@@ -52,10 +52,8 @@ export function resetup() {
     } else {
         height = document.getElementById('simulation').clientHeight * DPR
     }
-    // setup simulationArea and backgroundArea variables used to make changes to canvas.
     backgroundArea.setup()
     simulationArea.setup()
-    // redraw grid
     dots()
     document.getElementById('backgroundArea').style.height =
         height / DPR + 100 + 'px'
@@ -70,42 +68,27 @@ export function resetup() {
         plotArea.setup()
     }
     updateCanvasSet(true)
-    update() // INEFFICIENT, needs to be deprecated
+    update()
     simulationArea.prevScale = 0
     dots()
 }
 
-window.onresize = resetup // listener
-window.onorientationchange = resetup // listener
+window.onresize = resetup
+window.onorientationchange = resetup
+window.addEventListener('orientationchange', resetup)
 
-// for mobiles
-window.addEventListener('orientationchange', resetup) // listener
-
-/**
- * function to setup environment variables like projectId and DPR
- * @category setup
- */
 function setupEnvironment() {
     setupModules()
     const projectId = generateId()
     window.projectId = projectId
     updateSimulationSet(true)
-    // const DPR = window.devicePixelRatio || 1 // unused variable
     newCircuit('Main')
     window.data = {}
     resetup()
     setupCodeMirrorEnvironment()
 }
 
-/**
- * It initializes some useful array which are helpful
- * while simulating, saving and loading project.
- * It also draws icons in the sidebar
- * @category setup
- */
 function setupElementLists() {
-    // $('#menu').empty()
-
     window.circuitElementList = metadata.circuitElementList
     window.annotationList = metadata.annotationList
     window.inputList = metadata.inputList
@@ -116,15 +99,10 @@ function setupElementLists() {
         ...circuitElementList,
         'nodes',
         ...annotationList,
-    ] // Order of update
-    window.renderOrder = [...moduleList.slice().reverse(), 'wires', 'allNodes'] // Order of render
+    ]
+    window.renderOrder = [...moduleList.slice().reverse(), 'wires', 'allNodes']
 }
 
-/**
- * Fetches project data from API and loads it into the simulator.
- * @param {number} projectId The ID of the project to fetch data for
- * @category setup
- */
 async function fetchProjectData(projectId) {
     try {
         const response = await fetch(
@@ -139,13 +117,13 @@ async function fetchProjectData(projectId) {
         )
         if (response.ok) {
             const data = await response.json()
-            const simulatorVersion = data.simulatorVersion  
+            const simulatorVersion = data.simulatorVersion
             const projectName = data.name
-            if(!simulatorVersion){                 
-                window.location.href = `/simulator/edit/${projectName}`             
-            }           
-            if(simulatorVersion && simulatorVersion != "v0"){                 
-                window.location.href = `/simulatorvue/edit/${projectName}?simver=${simulatorVersion}`             
+            if(!simulatorVersion){
+                window.location.href = `/simulator/edit/${projectName}`
+            }
+            if(simulatorVersion && simulatorVersion != "v0"){
+                window.location.href = `/simulatorvue/edit/${projectName}?simver=${simulatorVersion}`
             }
             await load(data)
             await simulationArea.changeClockTime(data.timePeriod || 500)
@@ -160,36 +138,24 @@ async function fetchProjectData(projectId) {
     }
 }
 
-/**
- * Load project data immediately when available.
- * Improvement to eliminate delay caused by setTimeout in previous implementation revert if issues arise.
- * @category setup
- */
 async function loadProjectData() {
     window.logixProjectId = window.logixProjectId ?? 0
     if (window.logixProjectId !== 0) {
         $('.loadingIcon').fadeIn()
         await fetchProjectData(window.logixProjectId)
     } else if (localStorage.getItem('recover_login') && window.isUserLoggedIn) {
-        // Restore unsaved data and save
         const data = JSON.parse(localStorage.getItem('recover_login'))
         await load(data)
         localStorage.removeItem('recover')
         localStorage.removeItem('recover_login')
         await save()
     } else if (localStorage.getItem('recover')) {
-        // Restore unsaved data which didn't get saved due to error
         showMessage(
             "We have detected that you did not save your last work. Don't worry we have recovered them. Access them using Project->Recover"
         )
     }
 }
 
-/**
- * Show tour guide if it hasn't been completed yet.
- * The tour is shown after a delay of 2 seconds.
- * @category setup
- */
 function showTour() {
     if (!localStorage.tutorials_tour_done && !embed) {
         setTimeout(() => {
@@ -198,22 +164,16 @@ function showTour() {
     }
 }
 
-/**
- * The first function to be called to setup the whole simulator.
- * This function sets up the simulator environment, the UI, the listeners,
- * loads the project data, and shows the tour guide.
- * @category setup
- */
+// Removed initializeAuthentication() function from here
+
 export function setup() {
-    // let embed = false
-    // const startListeners = embed ? startEmbedListeners : startMainListeners
+    // Jutge authentication initialization is now handled in simulator.vue's onMounted
     setupElementLists()
     setupEnvironment()
     if (!embed) {
         setupUI()
         startMainListeners()
     }
-    // startListeners()
     loadProjectData()
     showTour()
 }

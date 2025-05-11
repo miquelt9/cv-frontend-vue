@@ -1,69 +1,72 @@
 <template>
     <v-dialog v-model="authDialogState.activate" :persistent="authDialogState.isPersistent" max-width="500px">
         <v-card class="messageBoxContent">
-            <v-card-title class="dialogHeader">Jutge Login</v-card-title>
-            <v-card-text>
-                <p>{{ authDialogState.messageText }}</p>
-                <v-text-field
-                    v-model="email"
-                    label="Email"
-                    type="email"
-                    required
-                    class="mt-4"
-                    variant="outlined"
-                    density="compact"
-                ></v-text-field>
-                <v-text-field
-                    v-model="password"
-                    label="Password"
-                    type="password"
-                    required
-                    class="mt-2"
-                    variant="outlined"
-                    density="compact"
-                ></v-text-field>
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                    color="primary"
-                    @click="submitCredentials"
-                    :disabled="!email || !password"
-                >
-                    Login
-                </v-btn>
-                <v-btn @click="cancelDialog">Cancel</v-btn>
-            </v-card-actions>
+            <template v-if="isLoggedIn && authDialogState.view === 'loggedInStatus'">
+                <v-card-title class="dialogHeader">Jutge Session</v-card-title>
+                <v-card-text>
+                    <p>Currently logged in as: {{ userIdentifier }}</p>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="warning" @click="handleLogout">Logout</v-btn>
+                    <v-btn @click="cancelDialog">Close</v-btn>
+                </v-card-actions>
+            </template>
+
+            <template v-else>
+                <v-card-title class="dialogHeader">Jutge Login</v-card-title>
+                <v-card-text>
+                    <p>{{ authDialogState.messageText }}</p>
+                    <v-text-field v-model="email" label="Email" type="email" required class="mt-4" variant="outlined"
+                        density="compact"></v-text-field>
+                    <v-text-field v-model="password" label="Password" type="password" required class="mt-2"
+                        variant="outlined" density="compact" @keyup.enter="submitCredentials"></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" @click="submitCredentials" :disabled="!email || !password">
+                        Login
+                    </v-btn>
+                    <v-btn @click="cancelDialog">Cancel</v-btn>
+                </v-card-actions>
+            </template>
         </v-card>
     </v-dialog>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
-import { usePromptStore } from '#/store/promptStore'; // Ajusta la ruta a tu store
+import { usePromptStore } from '#/store/promptStore'; // Adjust the path if necessary
 
 const promptStore = usePromptStore();
-// Usamos computed para obtener una referencia reactiva al estado 'auth' del store
 const authDialogState = computed(() => promptStore.auth);
+
+// Use getters for login state and user identifier
+const isLoggedIn = computed(() => promptStore.isJutgeLoggedIn);
+const userIdentifier = computed(() => promptStore.getJutgeUserIdentifier); // This accesses the getter's value
 
 const email = ref('');
 const password = ref('');
 
 function submitCredentials() {
     if (promptStore.resolvePromise) {
-        promptStore.resolvePromise({ email: email.value, password: password.value });
+        // Returns an object identifying the action as 'login' and the credentials
+        promptStore.resolvePromise({ action: 'login', payload: { email: email.value, password: password.value } });
     }
-    // No es necesario llamar a resetDialog() aquí si `jutge.js` se encarga de
-    // poner `promptStore.auth.activate = false;` lo cual debería activar el watch.
-    // Opcionalmente, puedes mantener el reset aquí para una limpieza inmediata.
-    // resetDialog(); // Opcional
+    // No need to reset here if `jutgeLogin` handles `activate = false`
+}
+
+function handleLogout() {
+    if (promptStore.resolvePromise) {
+        // Returns an object identifying the action as 'logout'
+        promptStore.resolvePromise({ action: 'logout' });
+    }
 }
 
 function cancelDialog() {
     if (promptStore.resolvePromise) {
-        promptStore.resolvePromise(null); // Resuelve con null para indicar cancelación
+        promptStore.resolvePromise(null); // Indicates cancellation
     }
-    // resetDialog(); // Opcional
 }
 
 function resetDialogFields() {
@@ -71,11 +74,26 @@ function resetDialogFields() {
     password.value = '';
 }
 
-// Observa el estado 'activate' del diálogo. Si se desactiva externamente,
-// resetea los campos del formulario.
 watch(() => authDialogState.value.activate, (isActive) => {
-    if (!isActive) {
-        resetDialogFields();
+    if (isActive) {
+        // If the dialog activates and the user is already logged in,
+        // ensure the view is correct.
+        // `jutgeLogin` in `jutge.js` should set `auth.view` appropriately.
+        if (isLoggedIn.value) {
+            promptStore.auth.view = 'loggedInStatus';
+        } else {
+            promptStore.auth.view = 'loginForm';
+        }
+    } else {
+        resetDialogFields(); // Reset fields when the dialog closes
+    }
+});
+
+// If the login state changes while the dialog is open (e.g., token expires),
+// this could force a view change, although `jutgeLogin` should primarily handle this upon opening.
+watch(isLoggedIn, (loggedIn) => {
+    if (authDialogState.value.activate) {
+        promptStore.auth.view = loggedIn ? 'loggedInStatus' : 'loginForm';
     }
 });
 
@@ -83,12 +101,8 @@ watch(() => authDialogState.value.activate, (isActive) => {
 
 <style scoped>
 .dialogHeader {
-    font-size: 1.25rem; /* 20px */
+    font-size: 1.25rem;
     font-weight: 500;
-    padding: 16px 24px 10px; /* Ajusta el padding si es necesario */
+    padding: 16px 24px 10px;
 }
-.messageBoxContent {
-    /* padding: 10px; // El padding de v-card-text y v-card-actions suele ser suficiente */
-}
-/* Asegúrate que los estilos de Vuetify se aplican correctamente */
 </style>

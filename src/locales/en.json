@@ -61,7 +61,8 @@
             },
             "jutge": {
                 "heading": "Jutge",
-                "send_to_jutge": "Send to Jutge"
+                "login_to_jutge": "Login to Jutge",
+                "send_circuit_to_jutge": "Send Circuit to Jutge"
             }
         },
         "panel_header": {
