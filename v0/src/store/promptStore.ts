@@ -163,8 +163,6 @@ export const usePromptStore = defineStore({
                     }
                 } else {
                     console.log('[PromptStore] No Jutge auth details found in localStorage.');
-                    // Ensure state is clean if nothing is in localStorage (though clearJutgeAuthDetails might be redundant if state is already null)
-                    // this.clearJutgeAuthDetails(); // Not strictly necessary if defaults are null
                 }
             } catch (error) {
                 console.error('[PromptStore] Error initializing Jutge auth from localStorage:', error);
