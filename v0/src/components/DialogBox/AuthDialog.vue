@@ -126,34 +126,3 @@ watch(() => authDialogState.value.activate, (isActive) => {
 });
 
 </script>
-
-<style scoped>
-.dialogHeader {
-    font-size: 1.25rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-}
-
-.primary-action-button.v-btn--variant-outlined {
-    color: white !important;
-    border-color: white !important;
-    font-weight: bold;
-}
-.primary-action-button.v-btn--variant-outlined:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.logout-button.v-btn--variant-outlined {
-    color: red !important;
-    border-color: white !important;
-    font-weight: bold;
-}
-.logout-button.v-btn--variant-outlined:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.v-btn--variant-outlined:not(.primary-action-button):not(.logout-button) {
-    font-weight: bold;
-}
-</style>

@@ -75,25 +75,3 @@ watch(() => sendCircuitDialogState.value.activate, (isActive) => {
     }
 });
 </script>
-
-<style scoped>
-.dialogHeader {
-    font-size: 1.25rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-}
-
-.primary-action-button.v-btn--variant-outlined {
-    color: white !important; /* Text color */
-    border-color: white !important; /* Border color */
-    font-weight: bold;
-}
-.primary-action-button.v-btn--variant-outlined:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.v-btn--variant-outlined:not(.primary-action-button) {
-    font-weight: bold;
-}
-</style>
