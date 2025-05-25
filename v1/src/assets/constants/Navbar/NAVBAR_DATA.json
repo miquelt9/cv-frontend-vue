@@ -230,6 +230,25 @@
                         "value": "false"
                     }
                 ]
+            },
+            {
+                "id": "5",
+                "text": "jutge",
+                "spanClass": "caret",
+                "dropdownItems": [
+                    {
+                        "id": "1",
+                        "item": "login_to_jutge",
+                        "itemid": "jutgeLogin",
+                        "attributes": []
+                    },
+                    {
+                        "id": "2",
+                        "item": "send_circuit_to_jutge",
+                        "itemid": "jutgeSendCircuit",
+                        "attributes": []
+                    }
+                ]
             }
         ]
     }
